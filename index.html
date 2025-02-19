@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OCR Calculator</title>
+  <title>Consistency Rating Calculator</title>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.ftcscout.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline';">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
@@ -51,6 +51,14 @@
       text-align: left;
       width: 80%;
     }
+
+    .ocr-gcr-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
     .ocr-value {
       font-size: 1.5em;
       font-weight: bold;
@@ -83,17 +91,21 @@
   </style>
 </head>
 <body>
-<h1>OCR Calculator</h1>
+<h1>Consistency Rating Calculator</h1>
 <label for="teamNumber">Team #:</label><input id="teamNumber" class="teamNumber">
 <button onclick="fetchData()">Fetch Data</button>
 <div id="results" class="alliance-stats"></div>
-<div id="ocr" class="ocr-value"></div>
+<div class="ocr-gcr-container">
+  <div id="ocr" class="ocr-value"></div>
+  <div id="gcr" class="ocr-value"></div>
+</div>
 <div class="divider"></div>
 <h1>Explanation</h1>
 <div class="explanation">
-  <h2>1. OCR Formula</h2>
-  <p>The Overall Consistency Rating (OCR) combines the weighted CI values for all phases:</p>
-  <pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)</code></pre>
+  <h2>1. OCR and GCR Formulas</h2>
+  <p>The Overall Consistency Rating (OCR) and General Consistency Rating (GCR) are calculated as follows:</p>
+  <pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)
+GCR = ((GCR[0] * 0.2) + (GCR[1] * 0.6) + (GCR[2] * 0.4) + (GCR[3] * 0.2)) * 4 //GCR is scaled to generally be around OCR levels</code></pre>
   <p>Where:</p>
   <ul>
     <li>Weight for <strong>Autonomous (<code>CI[1]</code>)</strong> = 0.6 (most important phase)</li>
@@ -101,11 +113,12 @@
     <li>Weight for <strong>Endgame (<code>CI[3]</code>)</strong> = 0.2</li>
     <li>Weight for <strong>Total Scores (<code>CI[0]</code>)</strong> = 0.2</li>
   </ul>
-  <p>The higher the OCR, the more consistent + well performing a team is.</p>
+  <p>GCR is for <strong>PURE</strong> consistency, while OCR takes into account OPR and how <strong>MUCH</strong> you score</p>
   <hr>
-  <h2>2. CI Formula</h2>
-  <p>The Consistency Index (CI) is calculated for each phase of the game as follows:</p>
-  <pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])</code></pre>
+  <h2>2. CI and GCR Formulas</h2>
+  <p>The Consistency Index (CI) and General Consistency Rating (GCR) are calculated for each phase of the game as follows:</p>
+  <pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])
+GCR[i] = avg[i] / dev[i]</code></pre>
   <p>Where:</p>
   <ul>
     <li>i = 0: Total scores</li>
@@ -117,15 +130,15 @@
     <li><code>opr[i]</code>: OPR (Offensive Power Rating) for phase i</li>
   </ul>
   <hr>
-  <h2>3. Explanation of Each CI Component</h2>
+  <h2>3. Explanation of Each CI and GCR Component</h2>
   <ul>
     <li><code>avg[i] / dev[i]</code>: <strong>Inverse Coefficient of Variation</strong>
       <ul>
         <li>Measures match-to-match consistency. Higher consistency results in higher values.</li>
-        <li>If the standard deviation is high, this component will reduce the CI.</li>
+        <li>If the standard deviation is high, this component will reduce the CI and GCR.</li>
       </ul>
     </li>
-    <li><code>0.25 * opr[i]</code>: <strong>Weighted OPR</strong>
+    <li><code>0.25 * opr[i]</code>: <strong>Weighted OPR</strong> (only for CI)
       <ul>
         <li>Adds a performance-based adjustment to the consistency metric.</li>
         <li>Helps balance consistency with overall scoring strength.</li>
@@ -133,7 +146,7 @@
     </li>
   </ul>
   <hr>
-  <h2>4. Steps to Calculate CI and OCR</h2>
+  <h2>4. Steps to Calculate CI, GCR, and OCR</h2>
   <h3>Step 1: Pull Data</h3>
   <p>Retrieve the match data for each team and each phase:</p>
   <ul>
@@ -141,20 +154,14 @@
     <li>Standard Deviations (<code>dev[i]</code>): Calculate the standard deviation for each phase.</li>
     <li>OPR (<code>opr[i]</code>): Use OPR or compute it if required.</li>
   </ul>
-  <h3>Step 2: Calculate CI for Each Phase</h3>
-  <p>Using the formula:</p>
-  <pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])</code></pre>
-  <h3>Step 3: Compute OCR</h3>
-  <p>Using the formula:</p>
-  <pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)</code></pre>
-  <hr>
-  <h2>5. Why the Weights?</h2>
-  <ul>
-    <li><strong>Autonomous (0.6)</strong>: Autonomous performance is often the most consistent and reliable phase, making it heavily weighted.</li>
-    <li><strong>Teleop (0.4)</strong>: Slightly less consistent but critical for high-scoring matches.</li>
-    <li><strong>Endgame (0.2)</strong>: Lower weight since it's often more volatile and less predictable.</li>
-    <li><strong>Total (0.2)</strong>: Provides a baseline measure of overall scoring consistency.</li>
-  </ul>
+  <h3>Step 2: Calculate CI and GCR for Each Phase</h3>
+  <p>Using the formulas:</p>
+  <pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])
+GCR[i] = avg[i] / dev[i]</code></pre>
+  <h3>Step 3: Compute OCR and GCR</h3>
+  <p>Using the formulas:</p>
+  <pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)
+GCR = (GCR[0] * 0.2) + (GCR[1] * 0.6) + (GCR[2] * 0.4) + (GCR[3] * 0.2) * 4</code></pre>
   <hr>
   <h2>Example Calculation</h2>
   <p>Here’s a mock dataset for a team across their matches:</p>
@@ -192,16 +199,22 @@
       </tr>
     </tbody>
   </table>
-  <h3>CI Calculation:</h3>
+  <h3>CI and GCR Calculation:</h3>
   <pre><code>CI[0] = 120 / 15 + (0.25 * 100) = 8 + 25 = 33
 CI[1] = 40 / 5 + (0.25 * 30) = 8 + 7.5 = 15.5
 CI[2] = 60 / 10 + (0.25 * 50) = 6 + 12.5 = 18.5
-CI[3] = 20 / 8 + (0.25 * 20) = 2.5 + 5 = 7.5</code></pre>
-  <h3>OCR Calculation:</h3>
+CI[3] = 20 / 8 + (0.25 * 20) = 2.5 + 5 = 7.5
+
+GCR[0] = 120 / 15 = 8
+GCR[1] = 40 / 5 = 8
+GCR[2] = 60 / 10 = 6
+GCR[3] = 20 / 8 = 2.5</code></pre>
+  <h3>OCR and GCR Calculation:</h3>
   <pre><code>OCR = (33 * 0.2) + (15.5 * 0.6) + (18.5 * 0.4) + (7.5 * 0.2)
-OCR = 6.6 + 9.3 + 7.4 + 1.5 = 24.8</code></pre>
-<br>
-<h3> Currently, the #1 Overall OPR Team, I Forgot, has a 42.17 OCR</h3>
+OCR = 6.6 + 9.3 + 7.4 + 1.5 = 24.8
+
+GCR = (8 * 0.2) + (8 * 0.6) + (6 * 0.4) + (2.5 * 0.2) * 4
+GCR = 1.6 + 4.8 + 2.4 + 0.5 = 9.3</code></pre>
 </div>
 
 <script>
@@ -211,6 +224,7 @@ OCR = 6.6 + 9.3 + 7.4 + 1.5 = 24.8</code></pre>
     // Clear previous results and error messages
     document.getElementById('results').innerText = '';
     document.getElementById('ocr').innerText = '';
+    document.getElementById('gcr').innerText = '';
 
     const queries = {
       opr: `query {
@@ -388,12 +402,23 @@ OCR = 6.6 + 9.3 + 7.4 + 1.5 = 24.8</code></pre>
         dev[2] !== 0 ? (avg[2] / dev[2]) + (0.25 * opr[2]) : 0,
         dev[3] !== 0 ? (avg[3] / dev[3]) + (0.25 * opr[3]) : 0
       ];
+
+      const GCR = [
+        dev[0] !== 0 ? (avg[0] / dev[0]) : 0,
+        dev[1] !== 0 ? (avg[1] / dev[1]) : 0,
+        dev[2] !== 0 ? (avg[2] / dev[2]) : 0,
+        dev[3] !== 0 ? (avg[3] / dev[3]) : 0
+      ];
+
       const ocr = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2);
+      const gcr = ((GCR[0] * 0.2) + (GCR[1] * 0.6) + (GCR[2] * 0.4) + (GCR[3] * 0.2)) * 4; //scale to  be close to ocr
 
       console.log('CI:', CI);
       console.log('OCR:', ocr);
+      console.log('GCR:', gcr);
 
       document.getElementById('ocr').innerText = `OCR: ${ocr.toFixed(2)}`;
+      document.getElementById('gcr').innerText = `GCR: ${gcr.toFixed(2)}`;
     } catch (error) {
       console.error('Error fetching data:', error);
       document.getElementById('results').innerText = `Error fetching data for team ${teamNumber}`;
