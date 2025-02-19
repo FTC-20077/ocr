@@ -115,10 +115,10 @@ GCR = ((GCR[0] * 0.2) + (GCR[1] * 0.6) + (GCR[2] * 0.4) + (GCR[3] * 0.2)) * 4 //
   </ul>
   <p>GCR is for <strong>PURE</strong> consistency, while OCR takes into account OPR and how <strong>MUCH</strong> you score</p>
   <hr>
-  <h2>2. CI and GCR Formulas</h2>
-  <p>The Consistency Index (CI) and General Consistency Rating (GCR) are calculated for each phase of the game as follows:</p>
-  <pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])
-GCR[i] = avg[i] / dev[i]</code></pre>
+  <h2>2. CI Formulas</h2>
+  <p>The Consistency Index (CI) is calculated for each phase of the game as follows:</p>
+  <p>For OCR: </p><pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])</code></pre>
+  <p>For GCR: </p><pre><code>CI[i] = avg[i] / dev[i]</code></pre>
   <p>Where:</p>
   <ul>
     <li>i = 0: Total scores</li>
@@ -130,7 +130,7 @@ GCR[i] = avg[i] / dev[i]</code></pre>
     <li><code>opr[i]</code>: OPR (Offensive Power Rating) for phase i</li>
   </ul>
   <hr>
-  <h2>3. Explanation of Each CI and GCR Component</h2>
+  <h2>3. Explanation of Each CI Component</h2>
   <ul>
     <li><code>avg[i] / dev[i]</code>: <strong>Inverse Coefficient of Variation</strong>
       <ul>
@@ -138,7 +138,7 @@ GCR[i] = avg[i] / dev[i]</code></pre>
         <li>If the standard deviation is high, this component will reduce the CI and GCR.</li>
       </ul>
     </li>
-    <li><code>0.25 * opr[i]</code>: <strong>Weighted OPR</strong> (only for CI)
+    <li><code>0.25 * opr[i]</code>: <strong>Weighted OPR</strong> (only for OCR)
       <ul>
         <li>Adds a performance-based adjustment to the consistency metric.</li>
         <li>Helps balance consistency with overall scoring strength.</li>
@@ -146,7 +146,7 @@ GCR[i] = avg[i] / dev[i]</code></pre>
     </li>
   </ul>
   <hr>
-  <h2>4. Steps to Calculate CI, GCR, and OCR</h2>
+  <h2>4. Steps to Calculate OCR and GCR from the CI</h2>
   <h3>Step 1: Pull Data</h3>
   <p>Retrieve the match data for each team and each phase:</p>
   <ul>
@@ -154,14 +154,14 @@ GCR[i] = avg[i] / dev[i]</code></pre>
     <li>Standard Deviations (<code>dev[i]</code>): Calculate the standard deviation for each phase.</li>
     <li>OPR (<code>opr[i]</code>): Use OPR or compute it if required.</li>
   </ul>
-  <h3>Step 2: Calculate CI and GCR for Each Phase</h3>
+  <h3>Step 2: Calculate CIfor Each Phase</h3>
   <p>Using the formulas:</p>
-  <pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])
-GCR[i] = avg[i] / dev[i]</code></pre>
+  <p>For OCR: </p><pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])</code></pre>
+  <p>For GCR: </p><pre><code>CI[i] = avg[i] / dev[i]</code></pre>
   <h3>Step 3: Compute OCR and GCR</h3>
   <p>Using the formulas:</p>
-  <pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)
-GCR = (GCR[0] * 0.2) + (GCR[1] * 0.6) + (GCR[2] * 0.4) + (GCR[3] * 0.2) * 4</code></pre>
+  <p>Using the CI for OCR: </p><pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)</code></pre>
+  <p>Using the CI for GCR: </p><pre><code>GCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2) * 4</code></pre>
   <hr>
   <h2>Example Calculation</h2>
   <p>Here’s a mock dataset for a team across their matches:</p>
@@ -199,16 +199,17 @@ GCR = (GCR[0] * 0.2) + (GCR[1] * 0.6) + (GCR[2] * 0.4) + (GCR[3] * 0.2) * 4</cod
       </tr>
     </tbody>
   </table>
-  <h3>CI and GCR Calculation:</h3>
-  <pre><code>CI[0] = 120 / 15 + (0.25 * 100) = 8 + 25 = 33
+  <h3>CI Calculations:</h3>
+  <p>For OCR</p><pre><code>CI[0] = 120 / 15 + (0.25 * 100) = 8 + 25 = 33
 CI[1] = 40 / 5 + (0.25 * 30) = 8 + 7.5 = 15.5
 CI[2] = 60 / 10 + (0.25 * 50) = 6 + 12.5 = 18.5
-CI[3] = 20 / 8 + (0.25 * 20) = 2.5 + 5 = 7.5
+CI[3] = 20 / 8 + (0.25 * 20) = 2.5 + 5 = 7.5</code></pre>
 
-GCR[0] = 120 / 15 = 8
-GCR[1] = 40 / 5 = 8
-GCR[2] = 60 / 10 = 6
-GCR[3] = 20 / 8 = 2.5</code></pre>
+  <p>For GCR</p><pre><code>
+CI[0] = 120 / 15 = 8
+CI[1] = 40 / 5 = 8
+CI[2] = 60 / 10 = 6
+CI[3] = 20 / 8 = 2.5</code></pre>
   <h3>OCR and GCR Calculation:</h3>
   <pre><code>OCR = (33 * 0.2) + (15.5 * 0.6) + (18.5 * 0.4) + (7.5 * 0.2)
 OCR = 6.6 + 9.3 + 7.4 + 1.5 = 24.8
