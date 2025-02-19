@@ -82,7 +82,7 @@
   </style>
 </head>
 <body>
-<h1>FTC Team Stats</h1>
+<h1>OCR Calculator</h1>
 <label for="teamNumber">Team #:</label><input id="teamNumber" class="teamNumber">
 <button onclick="fetchData()">Fetch Data</button>
 <div id="results" class="alliance-stats"></div>
@@ -90,7 +90,18 @@
 <div class="divider"></div>
 <h1>Explanation</h1>
 <div class="explanation">
-  <h2>1. CI Formula</h2>
+  <h2>1. OCR Formula</h2>
+  <p>The Overall Consistency Rating (OCR) combines the weighted CI values for all phases:</p>
+  <pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)</code></pre>
+  <p>Where:</p>
+  <ul>
+    <li>Weight for <strong>Autonomous (<code>CI[1]</code>)</strong> = 0.6 (most important phase)</li>
+    <li>Weight for <strong>Teleop (<code>CI[2]</code>)</strong> = 0.4</li>
+    <li>Weight for <strong>Endgame (<code>CI[3]</code>)</strong> = 0.2</li>
+    <li>Weight for <strong>Total Scores (<code>CI[0]</code>)</strong> = 0.2</li>
+  </ul>
+  <hr>
+  <h2>2. CI Formula</h2>
   <p>The Consistency Index (CI) is calculated for each phase of the game as follows:</p>
   <pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])</code></pre>
   <p>Where:</p>
@@ -104,7 +115,7 @@
     <li><code>opr[i]</code>: OPR (Offensive Power Rating) for phase i</li>
   </ul>
   <hr>
-  <h2>2. Explanation of Each CI Component</h2>
+  <h2>3. Explanation of Each CI Component</h2>
   <ul>
     <li><code>avg[i] / dev[i]</code>: <strong>Inverse Coefficient of Variation</strong>
       <ul>
@@ -118,17 +129,6 @@
         <li>Helps balance consistency with overall scoring strength.</li>
       </ul>
     </li>
-  </ul>
-  <hr>
-  <h2>3. OCR Formula</h2>
-  <p>The Overall Consistency Rating (OCR) combines the weighted CI values for all phases:</p>
-  <pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)</code></pre>
-  <p>Where:</p>
-  <ul>
-    <li>Weight for <strong>Autonomous (<code>CI[1]</code>)</strong> = 0.6 (most important phase)</li>
-    <li>Weight for <strong>Teleop (<code>CI[2]</code>)</strong> = 0.4</li>
-    <li>Weight for <strong>Endgame (<code>CI[3]</code>)</strong> = 0.2</li>
-    <li>Weight for <strong>Total Scores (<code>CI[0]</code>)</strong> = 0.2</li>
   </ul>
   <hr>
   <h2>4. Steps to Calculate CI and OCR</h2>
