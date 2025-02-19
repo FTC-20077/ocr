@@ -27,7 +27,7 @@
       font-family: 'Poppins', sans-serif;
      }
 
-      input {
+    input {
       padding: 10px;
       margin: 10px;
       border-radius: 5px;
@@ -71,19 +71,42 @@
       font-size: 1em;
     }
     table {
-      width: 100%;
+      width: 50%;
       border-collapse: collapse;
-      margin: 20px 0;
+      margin: 20px auto;
     }
     th, td {
       border: 1px solid #00509e;
       padding: 10px;
       text-align: center;
     }
-    th {
-      background-color: #00509e;
-      color: white;
-    }
+
+th {
+  background-color: #00509e;
+  color: white;
+  cursor: pointer;
+  position: relative;
+  padding-right: 20px; /* Add padding to make space for the icon */
+}
+
+th .sort-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 5px;
+  font-size: 0.8em;
+  color: #ffffff;
+}
+
+th.sort-asc .sort-icon::before {
+  content: '▲';
+  color: #f0f8ff;
+}
+
+th.sort-desc .sort-icon::after {
+  content: '▼';
+  color: #f0f8ff;
+}
+
     .divider {
       border-top: 2px solid #00509e;
       margin: 20px 0;
@@ -99,6 +122,29 @@
   <div id="ocr" class="ocr-value"></div>
   <div id="gcr" class="ocr-value"></div>
 </div>
+<div class="divider"></div>
+<h1>Top Team's CRs</h1>
+<table id="team-crs">
+  <thead>
+  <tr>
+      <th onclick="sortTable(0)">Team #<span class="sort-icon"></span></th>
+      <th onclick="sortTable(1)">OCR<span class="sort-icon"></span></th>
+      <th onclick="sortTable(2)">GCR<span class="sort-icon"></span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>21336</td><td>42.17</td><td>41.43</td></tr>
+    <tr><td>17962</td><td>38.15</td><td>24.65</td></tr>
+    <tr><td>14270</td><td>51.14</td><td>55.50</td></tr>
+    <tr><td>14903</td><td>52.51</td><td>62.54</td></tr>
+    <tr><td>19043</td><td>29.16</td><td>32.20</td></tr>
+    <tr><td>16460</td><td>34.62</td><td>33.25</td></tr>
+    <tr><td>19098</td><td>24.81</td><td>8.79</td></tr>
+    <tr><td>16166</td><td>17.10</td><td>11.22</td></tr>
+    <tr><td>21380</td><td>41.05</td><td>33.19</td></tr>
+    <tr><td>20077</td><td>40.19</td><td>58.98</td></tr>
+  </tbody>
+</table>
 <div class="divider"></div>
 <h1>Explanation</h1>
 <div class="explanation">
@@ -424,6 +470,54 @@ GCR = 1.6 + 4.8 + 2.4 + 0.5 = 9.3</code></pre>
       console.error('Error fetching data:', error);
       document.getElementById('results').innerText = `Error fetching data for team ${teamNumber}`;
     }
+  }
+
+   function sortTable(n) {
+    const table = document.getElementById("team-crs");
+    let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    switching = true;
+    dir = "asc";
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+      for (i = 1; i < (rows.length - 1); i++) {
+        shouldSwitch = false;
+        x = rows[i].getElementsByTagName("TD")[n];
+        y = rows[i + 1].getElementsByTagName("TD")[n];
+        if (dir == "asc") {
+          if (parseFloat(x.innerHTML) > parseFloat(y.innerHTML)) {
+            shouldSwitch = true;
+            break;
+          }
+        } else if (dir == "desc") {
+          if (parseFloat(x.innerHTML) < parseFloat(y.innerHTML)) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+      }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        switchcount++;
+      } else {
+        if (switchcount == 0 && dir == "asc") {
+          dir = "desc";
+          switching = true;
+        }
+      }
+    }
+    updateSortIcons(n, dir);
+  }
+
+  function updateSortIcons(columnIndex, direction) {
+    const headers = document.querySelectorAll('#team-crs th');
+    headers.forEach((header, index) => {
+      header.classList.remove('sort-asc', 'sort-desc');
+      if (index === columnIndex) {
+        header.classList.add(direction === 'asc' ? 'sort-asc' : 'sort-desc');
+      }
+    });
   }
 </script>
 </body>
