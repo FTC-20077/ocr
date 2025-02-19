@@ -199,6 +199,8 @@ CI[3] = 20 / 8 + (0.25 * 20) = 2.5 + 5 = 7.5</code></pre>
   <h3>OCR Calculation:</h3>
   <pre><code>OCR = (33 * 0.2) + (15.5 * 0.6) + (18.5 * 0.4) + (7.5 * 0.2)
 OCR = 6.6 + 9.3 + 7.4 + 1.5 = 24.8</code></pre>
+
+<h3> Currently, the #1 Overall OPR Team, I Forgot, has a 42.17 OCR</h3>
 </div>
 
 <script>
@@ -379,7 +381,12 @@ OCR = 6.6 + 9.3 + 7.4 + 1.5 = 24.8</code></pre>
         return;
       }
 
-      const CI = [(avg[0] / dev[0]) + (0.25 * opr[0]), (avg[1] / dev[1]) + (0.25 * opr[1]), (avg[2] / dev[2]) + (0.25 * opr[2]), (avg[3] / dev[3]) + (0.25 * opr[3])];
+      const CI = [
+        dev[0] !== 0 ? (avg[0] / dev[0]) + (0.25 * opr[0]) : 0,
+        dev[1] !== 0 ? (avg[1] / dev[1]) + (0.25 * opr[1]) : 0,
+        dev[2] !== 0 ? (avg[2] / dev[2]) + (0.25 * opr[2]) : 0,
+        dev[3] !== 0 ? (avg[3] / dev[3]) + (0.25 * opr[3]) : 0
+      ];
       const ocr = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2);
 
       console.log('CI:', CI);
