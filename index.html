@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FTC Team Stats</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      margin: 20px;
+      background-color: #f0f8ff;
+      color: #003366;
+    }
+    h1 {
+      color: #003366;
+      font-weight: 600;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      border: 1px solid #00509e;
+      font-family: 'Poppins', sans-serif;
+     }
+
+      input {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      border: 1px solid #00509e;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      color: #003366;
+     }
+
+    button {
+      background-color: #00509e;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover {
+      background-color: #003366;
+    }
+    .alliance-stats {
+      margin: 20px auto;
+      text-align: left;
+      width: 80%;
+    }
+    .ocr-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .explanation {
+      text-align: left;
+      margin: 20px auto;
+      width: 80%;
+      font-size: 1em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      border: 1px solid #00509e;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #00509e;
+      color: white;
+    }
+    .divider {
+      border-top: 2px solid #00509e;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+<h1>FTC Team Stats</h1>
+<label for="teamNumber">Team #:</label><input id="teamNumber" class="teamNumber">
+<button onclick="fetchData()">Fetch Data</button>
+<div id="results" class="alliance-stats"></div>
+<div id="ocr" class="ocr-value"></div>
+<div class="divider"></div>
+<h1>Explanation</h1>
+<div class="explanation">
+  <h2>1. CI Formula</h2>
+  <p>The Consistency Index (CI) is calculated for each phase of the game as follows:</p>
+  <pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])</code></pre>
+  <p>Where:</p>
+  <ul>
+    <li>i = 0: Total scores</li>
+    <li>i = 1: Autonomous phase</li>
+    <li>i = 2: Teleop phase</li>
+    <li>i = 3: Endgame phase</li>
+    <li><code>avg[i]</code>: Average score for the phase i</li>
+    <li><code>dev[i]</code>: Standard deviation of scores for the phase i</li>
+    <li><code>opr[i]</code>: OPR (Offensive Power Rating) for phase i</li>
+  </ul>
+  <hr>
+  <h2>2. Explanation of Each CI Component</h2>
+  <ul>
+    <li><code>avg[i] / dev[i]</code>: <strong>Inverse Coefficient of Variation</strong>
+      <ul>
+        <li>Measures match-to-match consistency. Higher consistency results in higher values.</li>
+        <li>If the standard deviation is high, this component will reduce the CI.</li>
+      </ul>
+    </li>
+    <li><code>0.25 * opr[i]</code>: <strong>Weighted OPR</strong>
+      <ul>
+        <li>Adds a performance-based adjustment to the consistency metric.</li>
+        <li>Helps balance consistency with overall scoring strength.</li>
+      </ul>
+    </li>
+  </ul>
+  <hr>
+  <h2>3. OCR Formula</h2>
+  <p>The Overall Consistency Rating (OCR) combines the weighted CI values for all phases:</p>
+  <pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)</code></pre>
+  <p>Where:</p>
+  <ul>
+    <li>Weight for <strong>Autonomous (<code>CI[1]</code>)</strong> = 0.6 (most important phase)</li>
+    <li>Weight for <strong>Teleop (<code>CI[2]</code>)</strong> = 0.4</li>
+    <li>Weight for <strong>Endgame (<code>CI[3]</code>)</strong> = 0.2</li>
+    <li>Weight for <strong>Total Scores (<code>CI[0]</code>)</strong> = 0.2</li>
+  </ul>
+  <hr>
+  <h2>4. Steps to Calculate CI and OCR</h2>
+  <h3>Step 1: Pull Data</h3>
+  <p>Retrieve the match data for each team and each phase:</p>
+  <ul>
+    <li>Averages (<code>avg[i]</code>): Calculate the mean score for each phase.</li>
+    <li>Standard Deviations (<code>dev[i]</code>): Calculate the standard deviation for each phase.</li>
+    <li>OPR (<code>opr[i]</code>): Use OPR or compute it if required.</li>
+  </ul>
+  <h3>Step 2: Calculate CI for Each Phase</h3>
+  <p>Using the formula:</p>
+  <pre><code>CI[i] = avg[i] / dev[i] + (0.25 * opr[i])</code></pre>
+  <h3>Step 3: Compute OCR</h3>
+  <p>Using the formula:</p>
+  <pre><code>OCR = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2)</code></pre>
+  <hr>
+  <h2>5. Why the Weights?</h2>
+  <ul>
+    <li><strong>Autonomous (0.6)</strong>: Autonomous performance is often the most consistent and reliable phase, making it heavily weighted.</li>
+    <li><strong>Teleop (0.4)</strong>: Slightly less consistent but critical for high-scoring matches.</li>
+    <li><strong>Endgame (0.2)</strong>: Lower weight since it's often more volatile and less predictable.</li>
+    <li><strong>Total (0.2)</strong>: Provides a baseline measure of overall scoring consistency.</li>
+  </ul>
+  <hr>
+  <h2>Example Calculation</h2>
+  <p>Here’s a mock dataset for a team across their matches:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Total (i=0)</th>
+        <th>Auto (i=1)</th>
+        <th>Teleop (i=2)</th>
+        <th>Endgame (i=3)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>avg[i]</td>
+        <td>120</td>
+        <td>40</td>
+        <td>60</td>
+        <td>20</td>
+      </tr>
+      <tr>
+        <td>dev[i]</td>
+        <td>15</td>
+        <td>5</td>
+        <td>10</td>
+        <td>8</td>
+      </tr>
+      <tr>
+        <td>opr[i]</td>
+        <td>100</td>
+        <td>30</td>
+        <td>50</td>
+        <td>20</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>CI Calculation:</h3>
+  <pre><code>CI[0] = 120 / 15 + (0.25 * 100) = 8 + 25 = 33
+CI[1] = 40 / 5 + (0.25 * 30) = 8 + 7.5 = 15.5
+CI[2] = 60 / 10 + (0.25 * 50) = 6 + 12.5 = 18.5
+CI[3] = 20 / 8 + (0.25 * 20) = 2.5 + 5 = 7.5</code></pre>
+  <h3>OCR Calculation:</h3>
+  <pre><code>OCR = (33 * 0.2) + (15.5 * 0.6) + (18.5 * 0.4) + (7.5 * 0.2)
+OCR = 6.6 + 9.3 + 7.4 + 1.5 = 24.8</code></pre>
+</div>
+
+<script>
+  async function fetchData() {
+    const teamNumber = document.getElementById('teamNumber').value;
+
+    // Clear previous results and error messages
+    document.getElementById('results').innerText = '';
+    document.getElementById('ocr').innerText = '';
+
+    const queries = {
+      opr: `query {
+        teamByNumber(number: ${teamNumber}) {
+          events(season: 2024) {
+            event {
+              end
+              started
+            }
+            stats {
+              ... on TeamEventStats2024 {
+                opr {
+                  totalPointsNp
+                  autoPoints
+                  dcPoints
+                  dcParkPoints
+                }
+              }
+            }
+          }
+        }
+      }`,
+      avg: `query {
+        teamByNumber(number: ${teamNumber}) {
+          events(season: 2024) {
+            event {
+              end
+              started
+            }
+            stats {
+              ... on TeamEventStats2024 {
+                avg {
+                  totalPointsNp
+                  autoPoints
+                  dcPoints
+                  dcParkPoints
+                }
+              }
+            }
+          }
+        }
+      }`,
+      tot: `query {
+        teamByNumber(number: ${teamNumber}) {
+          events(season: 2024) {
+            event {
+              end
+              started
+            }
+            stats {
+              ... on TeamEventStats2024 {
+                tot {
+                  totalPointsNp
+                  autoPoints
+                  dcPoints
+                  dcParkPoints
+                }
+              }
+            }
+          }
+        }
+      }`,
+      dev: `query {
+        teamByNumber(number: ${teamNumber}) {
+          events(season: 2024) {
+            event {
+              end
+              started
+            }
+            stats {
+              ... on TeamEventStats2024 {
+                dev {
+                  totalPointsNp
+                  autoPoints
+                  dcPoints
+                  dcParkPoints
+                }
+              }
+            }
+          }
+        }
+      }`
+    };
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Connection': 'keep-alive',
+      'DNT': '1',
+      'Origin': 'https://api.ftcscout.org',
+    };
+
+    const fetchData = async (query) => {
+      const response = await fetch('https://api.ftcscout.org/graphql', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ query: query })
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    };
+
+    try {
+      const oprData = await fetchData(queries.opr);
+      const avgData = await fetchData(queries.avg);
+      const totData = await fetchData(queries.tot);
+      const devData = await fetchData(queries.dev);
+
+      if (!oprData.data.teamByNumber || !avgData.data.teamByNumber || !totData.data.teamByNumber || !devData.data.teamByNumber) {
+        document.getElementById('results').innerText = `No data available for team ${teamNumber}`;
+        return;
+      }
+
+      const oprevents = oprData.data.teamByNumber.events;
+      const avgevents = avgData.data.teamByNumber.events;
+      const totevents = totData.data.teamByNumber.events;
+      const devevents = devData.data.teamByNumber.events;
+
+      let opr = [];
+      let avg = [];
+      let tot = [];
+      let dev = [];
+
+      for (const event of oprevents) {
+        if (event.event.started && event.stats.opr && event.stats.opr.totalPointsNp !== null) {
+          const potato = event.stats.opr;
+          if (potato) {
+            opr = [potato.totalPointsNp, potato.autoPoints, potato.dcPoints, potato.dcParkPoints];
+          }
+        }
+      }
+
+      for (const event of avgevents) {
+        if (event.event.started && event.stats.avg && event.stats.avg.totalPointsNp !== null) {
+          const potato = event.stats.avg;
+          if (potato) {
+            avg = [potato.totalPointsNp, potato.autoPoints, potato.dcPoints, potato.dcParkPoints];
+          }
+        }
+      }
+
+      for (const event of totevents) {
+        if (event.event.started && event.stats.tot && event.stats.tot.totalPointsNp !== null) {
+          const potato = event.stats.tot;
+          if (potato) {
+            tot = [potato.totalPointsNp, potato.autoPoints, potato.dcPoints, potato.dcParkPoints];
+          }
+        }
+      }
+
+      for (const event of devevents) {
+        if (event.event.started && event.stats.dev && event.stats.dev.totalPointsNp !== null) {
+          const potato = event.stats.dev;
+          if (potato) {
+            dev = [potato.totalPointsNp, potato.autoPoints, potato.dcPoints, potato.dcParkPoints];
+          }
+        }
+      }
+
+      const CI = [(avg[0] / dev[0]) + (0.25 * opr[0]), (avg[1] / dev[1]) + (0.25 * opr[1]), (avg[2] / dev[2]) + (0.25 * opr[2]), (avg[3] / dev[3]) + (0.25 * opr[3])];
+      const ocr = (CI[0] * 0.2) + (CI[1] * 0.6) + (CI[2] * 0.4) + (CI[3] * 0.2);
+
+      console.log('CI:', CI);
+      console.log('OCR:', ocr);
+
+      document.getElementById('ocr').innerText = `OCR: ${ocr.toFixed(2)}`;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      document.getElementById('results').innerText = `Error fetching data for team ${teamNumber}`;
+    }
+  }
+</script>
+</body>
+</html>
